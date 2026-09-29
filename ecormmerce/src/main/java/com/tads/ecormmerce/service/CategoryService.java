@@ -6,16 +6,16 @@ import com.tads.ecormmerce.repository.CategoryRepository;
 
 
 import com.tads.ecormmerce.service.exception.ResourceNotFoundException;
-import org.hibernate.ObjectNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 @Service
 public class CategoryService {
@@ -35,4 +35,25 @@ public class CategoryService {
 
         return new CategoryDTO(entity);
     }
- }
+    @Transactional(readOnly = true)
+    public CategoryDTO insert(CategoryDTO dto) {
+    Category entity = new Category();
+    entity.setName(dto.getName());
+
+    entity = repository.save(entity);
+    return new CategoryDTO(entity);
+    }
+
+    public CategoryDTO update(long id, CategoryDTO dto) {
+        try {
+            Category entity = repository.getReferenceById(id);
+            entity.setName(dto.getName());
+            entity = repository.save(entity);
+            return new CategoryDTO(entity);
+        } catch (EntityNotFoundException e) {
+            throw new ResourceNotFoundException("id not found!-"+id);
+        }
+
+    }
+}
+
